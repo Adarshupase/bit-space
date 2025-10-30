@@ -88,7 +88,7 @@ int main(void)
     int numOfBuckets = 3;
     int numOfBalls = 10;
     int numOfBars = 4;
-    float barLength = 40.0f;
+    float barLength = 110.0f;
     float barThickness = 20.0f;
     
 
@@ -288,7 +288,10 @@ int main(void)
                 }
 
             }
-            for(int j = 0; j < numOfBars; ++j) 
+            
+
+        }
+        for(int j = 0; j < numOfBars; ++j) 
             {
                     Bar currBar = bars[j];
                     float baseLength = currBar.length;
@@ -296,8 +299,12 @@ int main(void)
     
                     Line line;
                     line.startPos = (Vector2){
-                        barMid.x - cosf(degreeToRad(rotationAngle)) * baseLength / 2,
-                        barMid.y - sinf(degreeToRad(rotationAngle)) * baseLength / 2
+                        barMid.x - baseLength / 2,
+                        barMid.y
+                    };
+                    line.endPos = (Vector2){
+                        barMid.x + baseLength / 2,
+                        barMid.y
                     };
 
                     line.endPos =   (Vector2){barMid.x + cosf(degreeToRad(rotationAngle)) * baseLength / 2,
@@ -335,32 +342,33 @@ int main(void)
 
                     for (int e = 0 ; e < 4; e++)
                     {
-                        Vector2 ab = Vector2Subtract(edges[e].endPos,edges[e].startPos);
-                        Vector2 ap = Vector2Subtract(balls[i].pos,edges[e].startPos);
-                        float t = Vector2DotProduct(ap, ab) / Vector2DotProduct(ab, ab);
-                        t = Clamp(t, 0.0f, 1.0f);
-
-                        Vector2 closestPoint = Vector2Add(edges[e].startPos, Vector2Scale(ab, t));
-                        float dist = Vector2Distance(closestPoint, balls[i].pos);
-
-                        if (dist <= balls[i].radius) 
+                        for(int i = 0; i < numOfBalls; i++)
                         {
-                            Vector2 normal = normals[e];
-                            float dot = Vector2DotProduct(balls[i].ballSpeed, normal);
-                            if (dot > 0) normal = Vector2Negate(normal);
+                            Vector2 ab = Vector2Subtract(edges[e].endPos,edges[e].startPos);
+                            Vector2 ap = Vector2Subtract(balls[i].pos,edges[e].startPos);
+                            float t = Vector2DotProduct(ap, ab) / Vector2DotProduct(ab, ab);
+                            t = Clamp(t, 0.0f, 1.0f);
 
-                            balls[i].ballSpeed = Vector2Reflect(balls[i].ballSpeed, normal);
+                            Vector2 closestPoint = Vector2Add(edges[e].startPos, Vector2Scale(ab, t));
+                            float dist = Vector2Distance(closestPoint, balls[i].pos);
 
-                            Vector2 correction = Vector2Scale(normal, balls[i].radius - dist + 0.1f);
-                            balls[i].pos = Vector2Add(balls[i].pos, correction);
-                        }
+                            if (dist <= balls[i].radius) 
+                            {
+                                Vector2 normal = normals[e];
+                                float dot = Vector2DotProduct(balls[i].ballSpeed, normal);
+                                if (dot > 0) normal = Vector2Negate(normal);
+
+                                balls[i].ballSpeed = Vector2Reflect(balls[i].ballSpeed, normal);
+
+                                Vector2 correction = Vector2Scale(normal, balls[i].radius - dist + 0.1f);
+                                balls[i].pos = Vector2Add(balls[i].pos, correction);
+                            }
+                            }
 
                     }
 
                 
             }
-
-        }
         BeginDrawing();
             ClearBackground(RAYWHITE);  
             DrawLineEx(line.startPos,line.endPos,bar.thickness/2.0f,RED);
